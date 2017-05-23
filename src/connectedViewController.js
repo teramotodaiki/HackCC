@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+
 const electron_1 = require("electron");
 const main_1 = require("./main");
 const companionApp_1 = require("./base/companionApp");
@@ -8,6 +9,12 @@ const url = require("url");
 const messages = require("./messages");
 const fs = require("fs");
 const fixedEditors = require("./fixedEditors");
+
+
+const { dialog } = require('electron');
+const main = main_1;
+
+
 class ConnectedViewController {
     constructor() {
         this.editingButtonIndex = -1;
@@ -82,16 +89,14 @@ class ConnectedViewController {
         if (button.link == '' || inEditMode) {
             this.editingButtonIndex = buttonIndex;
             this.gotoEditView();
-        }
-        else {
+        } else {
             // Since we self host tynker we want to host their links too in our webview.
             // Pxt doesn't have interesting links and scratch is always external
             if (button.link.includes('tynker')) {
                 main_1.gotoURL(fixedEditors.Tynker, () => {
                     main_1.getWindow().webContents.send('openInWebview', button.link);
                 });
-            }
-            else {
+            } else {
                 // Mac won't open a url in default browser unless it starts with http://
                 let url = button.link.trim();
                 if (!url.includes('http')) {
@@ -139,16 +144,16 @@ class ConnectedViewController {
     }
     isValidEditor(editor) {
         return editor != null &&
-            typeof (editor.active) == 'boolean' &&
-            typeof (editor.color) == 'object' &&
-            typeof (editor.color.r) == 'number' &&
-            typeof (editor.color.g) == 'number' &&
-            typeof (editor.color.b) == 'number' &&
-            typeof (editor.link) == 'string' &&
-            typeof (editor.name) == 'string';
+            typeof(editor.active) == 'boolean' &&
+            typeof(editor.color) == 'object' &&
+            typeof(editor.color.r) == 'number' &&
+            typeof(editor.color.g) == 'number' &&
+            typeof(editor.color.b) == 'number' &&
+            typeof(editor.link) == 'string' &&
+            typeof(editor.name) == 'string';
     }
     saveEditorButtons() {
-        fs.writeFile(this.saveFile, JSON.stringify(this.editorButtons), () => { });
+        fs.writeFile(this.saveFile, JSON.stringify(this.editorButtons), () => {});
     }
     gotoEditView() {
         main_1.gotoView('editView.html', () => {
@@ -179,6 +184,24 @@ class ConnectedViewController {
         return windowUrl;
     }
     onOpenEditor(event, params) {
+        var options = {
+            type: 'info',
+            buttons: ['OK', 'テスト', 'Cancel', 'sample', 'Yes', 'No'],
+            title: 'タイトル',
+            message: 'メッセージ',
+            detail: '詳細メッセージ'
+        };
+
+
+        /*
+        main.getWindow().webContents.executeJavaScript(`
+            console.log('onOpenEditor', ${JSON.stringify(event)}, ${JSON.stringify(params)})
+        `);
+        */
+
+        // params.editorType = messages.EditorType.SameWindow;
+
+
         params.url = this.addDevToolsQueryString(params.url);
         switch (params.editorType) {
             case messages.EditorType.External:
@@ -189,8 +212,7 @@ class ConnectedViewController {
                 main_1.gotoURL(params.url, null);
                 break;
         }
-    }
-    ;
+    };
     createPlaceholderEditor(active) {
         return new editorButton_1.EditorButton('Add Service', '', new editorButton_1.Color(255, 255, 255), active);
     }

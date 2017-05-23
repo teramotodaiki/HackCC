@@ -85,7 +85,7 @@
     -webkit-app-region: no-drag;
 }
 
-.colorRadioWrapper input:checked + .colorRadio {
+.colorRadioWrapper input:checked+.colorRadio {
     outline-color: black;
 }
 
@@ -102,5 +102,5 @@
 }
 
 #TitleText {
-  text-align: center;
+    text-align: center;
 }

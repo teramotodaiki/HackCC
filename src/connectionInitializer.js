@@ -4,7 +4,7 @@ const companionApp_1 = require("./base/companionApp");
 const commandError_1 = require("./base/commandError");
 let requiredCompanionProtocol = 2;
 var ConnectionStage;
-(function (ConnectionStage) {
+(function(ConnectionStage) {
     ConnectionStage[ConnectionStage["NotConnected"] = 0] = "NotConnected";
     ConnectionStage[ConnectionStage["CheckingVersion"] = 1] = "CheckingVersion";
     ConnectionStage[ConnectionStage["EnablingEncryption"] = 2] = "EnablingEncryption";
@@ -51,38 +51,42 @@ class ConnectionInitializer {
             return;
         }
         switch (this.connectionStage) {
-            case ConnectionStage.CheckingVersion: {
-                let verificationError = this.verifyGetClientInfo(response);
-                if (verificationError != commandError_1.ConnectionError.None) {
-                    this.callback(verificationError);
-                    return;
+            case ConnectionStage.CheckingVersion:
+                {
+                    let verificationError = this.verifyGetClientInfo(response);
+                    if (verificationError != commandError_1.ConnectionError.None) {
+                        this.callback(verificationError);
+                        return;
+                    }
+                    companionApp_1.getApp().debugLog('Client is in education mode');
+                    this.connectionStage = ConnectionStage.EnablingEncryption;
+                    let params = companionApp_1.getApp().server.beginKeyExchange();
+                    this.sendCommand({ 'publicKey': params.publicKey, 'salt': params.salt }, 'enableencryption');
+                    break;
                 }
-                companionApp_1.getApp().debugLog('Client is in education mode');
-                this.connectionStage = ConnectionStage.EnablingEncryption;
-                let params = companionApp_1.getApp().server.beginKeyExchange();
-                this.sendCommand({ 'publicKey': params.publicKey, 'salt': params.salt }, 'enableencryption');
-                break;
-            }
-            case ConnectionStage.EnablingEncryption: {
-                if (response.body.publicKey == null || companionApp_1.getApp().server.completeKeyExchange(response.body.publicKey) == false) {
-                    this.callback(commandError_1.ConnectionError.GetInfoError);
-                    return;
+            case ConnectionStage.EnablingEncryption:
+                {
+                    if (response.body.publicKey == null || companionApp_1.getApp().server.completeKeyExchange(response.body.publicKey) == false) {
+                        this.callback(commandError_1.ConnectionError.GetInfoError);
+                        return;
+                    }
+                    companionApp_1.getApp().debugLog('Encryption enabled');
+                    this.connectionStage = ConnectionStage.CreatingAgent;
+                    this.sendCommand({}, 'createagent');
+                    break;
                 }
-                companionApp_1.getApp().debugLog('Encryption enabled');
-                this.connectionStage = ConnectionStage.CreatingAgent;
-                this.sendCommand({}, 'createagent');
-                break;
-            }
-            case ConnectionStage.CreatingAgent: {
-                companionApp_1.getApp().debugLog('Agent created');
-                this.connectionStage = ConnectionStage.Complete;
-                this.callback(commandError_1.ConnectionError.None);
-                break;
-            }
-            default: {
-                companionApp_1.getApp().debugLog('Unexpected connection stage in command response');
-                break;
-            }
+            case ConnectionStage.CreatingAgent:
+                {
+                    companionApp_1.getApp().debugLog('Agent created');
+                    this.connectionStage = ConnectionStage.Complete;
+                    this.callback(commandError_1.ConnectionError.None);
+                    break;
+                }
+            default:
+                {
+                    companionApp_1.getApp().debugLog('Unexpected connection stage in command response');
+                    break;
+                }
         }
     }
     onError(error) {

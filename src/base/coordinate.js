@@ -9,8 +9,7 @@ class Coordinate {
             result.relative = true;
             // cut off ~
             coord = coord.substr(1);
-        }
-        else {
+        } else {
             result.relative = false;
         }
         result.coord = Number(coord);

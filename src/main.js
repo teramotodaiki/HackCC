@@ -3,6 +3,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 let startupTime = process.hrtime();
 const electron_1 = require("electron");
+
+
+const electron = electron_1;
+
+
+
 const restServer_1 = require("./restServer");
 const connectionInitializer_1 = require("./connectionInitializer");
 const commandError_1 = require("./base/commandError");
@@ -21,7 +27,10 @@ const splitViewMinWidth = 1024;
 const launchURI = 'codeconnection';
 const minecraftURI = 'minecraftedu://?wsserver=ws://localhost:';
 // Command-line option to open dev tools for browser windows and hosted webviews
+
 const openDevTools = process.argv.indexOf('--devtools') > -1;
+
+
 let win;
 let onViewLoad = null;
 let restServer = restServer_1.RestServer;
@@ -29,38 +38,46 @@ let restPort = 8080;
 let wasURILaunched = false;
 let timeCreatedMS = Date.now();
 let connectedViewController = new connectedViewController_1.ConnectedViewController();
+
 function setURILaunched() {
     companionApp_1.getApp().debugLog('Was launched via URI');
     wasURILaunched = true;
 }
+
 function getWindow() {
     return win;
 }
 exports.getWindow = getWindow;
+
 function getShouldOpenDevTools() {
     return openDevTools;
 }
 exports.getShouldOpenDevTools = getShouldOpenDevTools;
+
 function gotoWaitingView() {
     gotoView('waitingView.html', () => {
         win.webContents.send('setCommandString', `/connect ${companionApp_1.getApp().server.getIPAddress()}:${companionApp_1.getApp().wsPort}`);
     });
 }
+
 function gotoErrorView(errorMessage) {
     gotoView('errorView.html', () => {
         win.webContents.send('setErrorString', errorMessage);
     });
 }
+
 function gotoView(filename, loadedCallback) {
     setDefaultWindow();
     gotoURL('file://' + __dirname + '/' + filename, loadedCallback);
 }
 exports.gotoView = gotoView;
+
 function gotoURL(url, loadedCallback) {
     win.loadURL(url);
     onViewLoad = loadedCallback;
 }
 exports.gotoURL = gotoURL;
+
 function setDefaultWindow() {
     win.setResizable(false);
     if (win.isMaximized()) {
@@ -68,19 +85,20 @@ function setDefaultWindow() {
     }
     win.setSize(defaultViewWidth, defaultViewHeight);
 }
+
 function setEditorWindow(splitView = false) {
     const { width, height } = electron_1.screen.getPrimaryDisplay().workAreaSize;
     if (splitView && width >= splitViewMinWidth) {
         win.setPosition(0, 0);
         win.setSize(width / 2, height, true);
-    }
-    else {
+    } else {
         win.center();
         win.setSize(editorWidth, editorHeight, true);
     }
     win.setMinimumSize(editorMinWidth, editorMinHeight);
     win.setResizable(true);
 }
+
 function invokeMinecraftURI() {
     // Only interested in this URI if Minecraft opened us via URI
     if (wasURILaunched === true) {
@@ -89,15 +107,13 @@ function invokeMinecraftURI() {
     }
 }
 class CodeConnection {
-    onCommandResponse(response) {
-    }
+    onCommandResponse(response) {}
     onCommandError(error) {
         if (error.errorCode == commandError_1.ErrorCode.FailedToBind) {
             gotoErrorView(`${error.errorMessage}. Is another instance of this app running? Please exit the app.`);
         }
     }
-    onConnectionEstablished() {
-    }
+    onConnectionEstablished() {}
     onListening() {
         invokeMinecraftURI();
     }
@@ -121,12 +137,16 @@ class CodeConnection {
         gotoWaitingView();
     }
 }
+
+
 let cc;
+
 function restBindError(error) {
     if (error.errorCode == commandError_1.ErrorCode.FailedToBind) {
         gotoErrorView(`${error.errorMessage}. Is another instance of this app running? Please exit the app.`);
     }
 }
+
 function createBrowserWindow(url, splitView = false) {
     let result;
     const { width, height } = electron_1.screen.getPrimaryDisplay().workAreaSize;
@@ -138,13 +158,12 @@ function createBrowserWindow(url, splitView = false) {
             x: 0,
             y: 0
         });
-    }
-    else {
+    } else {
         result = new electron_1.BrowserWindow({ width: editorWidth, height: editorHeight });
     }
     result.setMenu(null);
     result.loadURL(url);
-    result.webContents.on("did-stop-loading", function () {
+    result.webContents.on("did-stop-loading", function() {
         if (openDevTools) {
             result.webContents.openDevTools();
         }
@@ -152,12 +171,26 @@ function createBrowserWindow(url, splitView = false) {
     return result;
 }
 exports.createBrowserWindow = createBrowserWindow;
+
 function createWindow() {
     // Create debug window first so it's under the main one
     if (!sharedConstants_1.IsProduction) {
         companionApp_1.getApp().createDebugWindow();
     }
-    win = new electron_1.BrowserWindow({ width: defaultViewWidth, height: defaultViewHeight, resizable: false, frame: false });
+
+
+    win = new electron.BrowserWindow({
+        resizable: true,
+        frame: false
+    });
+
+
+    // 仮
+    win.setResizable = () => {};
+
+    win.openDevTools();
+
+
     // Disable file, edit, etc. menu
     win.setMenu(null);
     gotoWaitingView();
@@ -252,8 +285,7 @@ electron_1.ipcMain.on('setRawListening', (event, shouldListen) => {
     companionApp_1.getApp().setRawSocketListener(shouldListen ? (message) => {
         if (win && connectedViewController.getIsHostingEditor()) {
             win.webContents.send('responseFromMinecraft', message);
-        }
-        else {
+        } else {
             // If window is gone, also get rid of listener
             companionApp_1.getApp().setRawSocketListener(null);
         }
@@ -264,6 +296,8 @@ electron_1.ipcMain.on('exitSameWindowEditor', (event, params) => {
     connectedViewController.init();
     if (params.isEditorLoaded) {
         win.center();
+
+
     }
 });
 electron_1.ipcMain.on('sameWindowEditorLoaded', (event, params) => {

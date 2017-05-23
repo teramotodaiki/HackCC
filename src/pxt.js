@@ -5,7 +5,7 @@ const url = require("url");
 const hostedIDE = require("./hostedIDE");
 const editor = document.getElementById('Editor');
 hostedIDE.setupEditorName('Microsoft MakeCode');
-hostedIDE.setupEditorTransition(/*allowDevTools*/ true);
+hostedIDE.setupEditorTransition( /*allowDevTools*/ true);
 hostedIDE.setupNavigationBar();
 hostedIDE.setupIPCPipe();
 // Open any links in an external browser page.
