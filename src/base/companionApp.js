@@ -6,6 +6,7 @@ const WS = require("./socketServer");
 const commandGlue_1 = require("./commandGlue");
 const commandError_1 = require("./commandError");
 const telemetry_1 = require("./telemetry");
+
 class CompanionApp {
     constructor() {
         this.onViewLoad = null;
@@ -28,8 +29,7 @@ class CompanionApp {
     debugLog(message) {
         if (this.debugWin != null && this.debugWindowReady) {
             this.debugWin.webContents.send('log', message);
-        }
-        else {
+        } else {
             this.queuedLogs.push(message);
         }
         console.log(message);
@@ -109,8 +109,7 @@ class CompanionApp {
         self.messageTarget = self.connectionInitializer;
         if (self.connectionInitializer != null) {
             self.connectionInitializer.onConnected.call(self.connectionInitializer);
-        }
-        else {
+        } else {
             // If no initializer is given, skip it
             self.onConnectionComplete.call(self, commandError_1.ConnectionError.None);
         }
@@ -145,6 +144,7 @@ class CompanionApp {
 }
 exports.CompanionApp = CompanionApp;
 let companionApp = new CompanionApp();
+
 function getApp() {
     return companionApp;
 }

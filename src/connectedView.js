@@ -10,8 +10,12 @@ let connectedLabel = document.getElementById('ConnectedLabel');
 let pxtButton = document.getElementById('PXTButton');
 let scratchButton = document.getElementById('ScratchButton');
 let tynkerButton = document.getElementById('TynkerButton');
-let customButtons = [document.getElementById('CustomButtonA'), document.getElementById('CustomButtonB'), document.getElementById('CustomButtonC')];
-let fixedButtons = [pxtButton, scratchButton, tynkerButton];
+
+let feelesButton = document.getElementById('FeelesButton');
+
+
+let customButtons = [ /* document.getElementById('CustomButtonA'), */ document.getElementById('CustomButtonB'), document.getElementById('CustomButtonC')];
+let fixedButtons = [pxtButton, scratchButton, tynkerButton, feelesButton];
 let editButton = document.getElementById('EditLinksButton');
 const ipcRenderer = electron.ipcRenderer;
 let inEditMode = false;
@@ -31,8 +35,7 @@ electron.ipcRenderer.on('setEditorButtons', (event, buttons) => {
         if (buttonData.link != '') {
             element.addEventListener('contextmenu', (event) => {
                 if (event.button == 2 && customButtons[i]) {
-                    let ctxMenu = electron.remote.Menu.buildFromTemplate([
-                        {
+                    let ctxMenu = electron.remote.Menu.buildFromTemplate([{
                             'label': 'Edit Service',
                             click() { sendCustomClick(true, i); }
                         },
@@ -63,15 +66,16 @@ editButton.addEventListener('click', (event) => {
         if (inEditMode) {
             button[oldStyle] = button.style.backgroundColor;
             button.style.backgroundColor = editorButton_1.Color.toStyle(editingColor);
-        }
-        else {
+        } else {
             button.style.backgroundColor = button[oldStyle];
         }
     });
 });
+
 function sendCustomClick(isEditMode, buttonIndex) {
     ipcRenderer.send('customButtonClick', isEditMode, buttonIndex);
 }
+
 function deleteButtonContexet(buttonIndex) {
     sendCustomClick(true, buttonIndex);
     ipcRenderer.send('deleteEditor');
@@ -83,6 +87,7 @@ for (let i = 0; i < customButtons.length; ++i) {
     });
     mcButton_1.setupMCButtonEvents(button);
 }
+
 function openWindowButton(url, button, type, splitView = false) {
     button.addEventListener('click', (event) => {
         const msg = {
@@ -99,4 +104,7 @@ function openWindowButton(url, button, type, splitView = false) {
 openWindowButton(fixedEditors.Pxt, pxtButton, messages_1.EditorType.SameWindow);
 openWindowButton(fixedEditors.Scratch, scratchButton, messages_1.EditorType.External);
 openWindowButton(fixedEditors.Tynker, tynkerButton, messages_1.EditorType.SameWindow);
+
+openWindowButton(fixedEditors.Feeles, feelesButton, messages_1.EditorType.SameWindow);
+
 //# sourceMappingURL=connectedView.js.map

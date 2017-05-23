@@ -68,6 +68,10 @@ class SocketServer {
                 client.close();
                 return;
             }
+
+            companionApp_1.getApp().debugLog('WSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS');
+
+
             this.connectedClient = client;
             companionApp_1.getApp().debugLog(`Connected! ${this.getConnectedIP()}`);
             socketServer.callbacks.onConnected();
@@ -88,8 +92,7 @@ class SocketServer {
                 let response = null;
                 try {
                     response = JSON.parse(message);
-                }
-                catch (e) {
+                } catch (e) {
                     // Should never happen
                     companionApp_1.getApp().debugLog('Failed to parse JSON from Minecraft, could be an encryption error');
                     socketServer.callbacks.onError(new commandError_1.CommandError(commandError_1.ErrorCode.FailedToParseCommandResponse), message);
@@ -99,53 +102,54 @@ class SocketServer {
                 try {
                     let purpose = response.header.messagePurpose;
                     switch (purpose) {
-                        case 'event': {
-                            let callback = socketServer.callbacks.eventCallbacks[response.body.eventName];
-                            if (callback != null) {
-                                callback(response);
-                                break;
-                            }
-                            else {
-                                // Can happen if a previous websocket connection didn't unsubscribe 
-                                if (this.rawListenerCallback == null) {
-                                    companionApp_1.getApp().debugLog(`Received event this wasn't subscribed to: ${response.body.eventName}`);
+                        case 'event':
+                            {
+                                let callback = socketServer.callbacks.eventCallbacks[response.body.eventName];
+                                if (callback != null) {
+                                    callback(response);
+                                    break;
+                                } else {
+                                    // Can happen if a previous websocket connection didn't unsubscribe
+                                    if (this.rawListenerCallback == null) {
+                                        companionApp_1.getApp().debugLog(`Received event this wasn't subscribed to: ${response.body.eventName}`);
+                                    }
                                 }
-                            }
-                            break;
-                        }
-                        case 'commandResponse': {
-                            // From minecraft's status code:
-                            // Creates an MCRESULT. Similar to HRESULT, the first bit indicates success (0) or
-                            // failure (1). The next 15 are a category code, indicating the system the error
-                            // originated from. The remaining 16 bits are used to store a unique result code.
-                            let statusCode = response.body.statusCode;
-                            if ((statusCode & (1 << 31)) == 0) {
-                                socketServer.callbacks.onCommandResponse(response);
                                 break;
                             }
-                            // else intentional fall through to error case
-                        }
-                        case 'error': {
-                            if (socketServer.closeRequestId == response.header.requestId) {
-                                companionApp_1.getApp().debugLog('Error with close request, forcing close');
-                                socketServer.connectedClient.close();
+                        case 'commandResponse':
+                            {
+                                // From minecraft's status code:
+                                // Creates an MCRESULT. Similar to HRESULT, the first bit indicates success (0) or
+                                // failure (1). The next 15 are a category code, indicating the system the error
+                                // originated from. The remaining 16 bits are used to store a unique result code.
+                                let statusCode = response.body.statusCode;
+                                if ((statusCode & (1 << 31)) == 0) {
+                                    socketServer.callbacks.onCommandResponse(response);
+                                    break;
+                                }
+                                // else intentional fall through to error case
                             }
-                            else {
-                                let cm = new commandError_1.CommandError(commandError_1.ErrorCode.FailedCommandExecution);
-                                cm.errorMessage += `\n${response.body.statusMessage}`;
-                                companionApp_1.getApp().debugLog(cm.errorMessage);
-                                socketServer.callbacks.onError(cm, response);
+                        case 'error':
+                            {
+                                if (socketServer.closeRequestId == response.header.requestId) {
+                                    companionApp_1.getApp().debugLog('Error with close request, forcing close');
+                                    socketServer.connectedClient.close();
+                                } else {
+                                    let cm = new commandError_1.CommandError(commandError_1.ErrorCode.FailedCommandExecution);
+                                    cm.errorMessage += `\n${response.body.statusMessage}`;
+                                    companionApp_1.getApp().debugLog(cm.errorMessage);
+                                    socketServer.callbacks.onError(cm, response);
+                                }
+                                break;
                             }
-                            break;
-                        }
-                        default: {
-                            companionApp_1.getApp().debugLog('Unknown message purpose');
-                            socketServer.callbacks.onError(new commandError_1.CommandError(commandError_1.ErrorCode.FailedToParseCommandResponse), response);
-                            break;
-                        }
+                        default:
+                            {
+                                companionApp_1.getApp().debugLog('Unknown message purpose');
+                                socketServer.callbacks.onError(new commandError_1.CommandError(commandError_1.ErrorCode.FailedToParseCommandResponse), response);
+                                break;
+                            }
                     }
-                }
-                catch (e) {
+                } catch (e) {
                     companionApp_1.getApp().debugLog(`Malformed response:\n${data.utf8Data}`);
                     socketServer.callbacks.onError(new commandError_1.CommandError(commandError_1.ErrorCode.FailedToParseCommandResponse), response);
                 }
@@ -221,12 +225,10 @@ class SocketServer {
             let message = text;
             if (this.encryption.enabled()) {
                 this.connectedClient.send(this.encryption.encrypt(message), { binary: true });
-            }
-            else {
+            } else {
                 this.connectedClient.send(message);
             }
-        }
-        else {
+        } else {
             companionApp_1.getApp().debugLog("Couldn't send, no connected client");
             if (this.rawListenerCallback != null) {
                 this.rawListenerCallback('{"error":"Not connected"}');

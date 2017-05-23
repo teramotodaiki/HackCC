@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ErrorCode;
-(function (ErrorCode) {
+(function(ErrorCode) {
     ErrorCode[ErrorCode["RestParseFail"] = 0] = "RestParseFail";
     ErrorCode[ErrorCode["TargetParseFail"] = 1] = "TargetParseFail";
     ErrorCode[ErrorCode["NoConnection"] = 2] = "NoConnection";
@@ -43,13 +43,14 @@ class CommandError {
             case ErrorCode.FailedToBind:
                 this.errorMessage = 'Failed to bind to port: ';
                 break;
-            default: console.assert(false, 'Unhandled error code');
+            default:
+                console.assert(false, 'Unhandled error code');
         }
     }
 }
 exports.CommandError = CommandError;
 var ConnectionError;
-(function (ConnectionError) {
+(function(ConnectionError) {
     ConnectionError[ConnectionError["None"] = 0] = "None";
     ConnectionError[ConnectionError["GetInfoError"] = 1] = "GetInfoError";
     ConnectionError[ConnectionError["ThisOutOfDate"] = 2] = "ThisOutOfDate";

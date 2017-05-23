@@ -21,6 +21,7 @@ let isMaximized = false;
 let previousWinSize = win.getSize();
 let isEditorLoaded = false;
 let editorName;
+
 function setupEditorName(name) {
     editorName = name;
     document.title = constants.ApplicationName;
@@ -70,8 +71,7 @@ function setupNavigationBar() {
             maxButton.classList.remove('isMaximized');
             win.setSize(previousWinSize[0], previousWinSize[1]);
             win.setMovable(true);
-        }
-        else {
+        } else {
             maxButton.classList.add('isMaximized');
             previousWinSize = win.getSize();
             win.maximize();
@@ -85,6 +85,7 @@ function setupNavigationBar() {
     });
 }
 exports.setupNavigationBar = setupNavigationBar;
+
 function editorTransitionCallback() {
     const msg = {
         splitView: true
@@ -108,16 +109,17 @@ function editorTransitionCallback() {
     // window around
     editor.removeEventListener('did-finish-load', editorTransitionCallback);
 }
+
 function editorLoadErrorCallback() {
     // In case of load error, the did-finish-load event is still fired, so remove the handler
     editor.removeEventListener('did-finish-load', editorTransitionCallback);
     if (editorName) {
         loadingLabel.textContent = `Error loading ${editorName}. ${internetMsg}`;
-    }
-    else {
+    } else {
         loadingLabel.textContent = `Error loading the editor. ${internetMsg}`;
     }
 }
+
 function setupEditorTransition(allowDevTools = false) {
     if (allowDevTools) {
         // If the current editor allows dev tools to be open, and the main process passed 'openDevTools=true' as a
@@ -130,6 +132,7 @@ function setupEditorTransition(allowDevTools = false) {
     editor.addEventListener('did-fail-load', editorLoadErrorCallback);
 }
 exports.setupEditorTransition = setupEditorTransition;
+
 function allowAlternateStartPage() {
     electron_1.ipcRenderer.on('openInWebview', (event, url) => {
         editor.loadURL(url);
@@ -146,8 +149,7 @@ function setupIPCPipe() {
             // Forward messages from pxt-core to Minecraft.
             const minecraftMessage = event.args[0];
             minecraftApi.sendToMinecraft(JSON.stringify(minecraftMessage));
-        }
-        else {
+        } else {
             console.log(`Ignoring editor IPC message: ${event.channel}`);
         }
     });
